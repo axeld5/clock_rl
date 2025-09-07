@@ -97,7 +97,7 @@ def evaluate_all_clocks(clocks_folder="public_clocks"):
             image = Image.open(clock_path)
 
             # Define the problem/question
-            problem = "What time does this clock show? Please provide the answer in HH:MM format."
+            problem = "What time is shown on the clock in the given image?"
 
             # Generate response
             generated_text, inference_time, num_tokens = generate_with_reasoning(problem, image)
