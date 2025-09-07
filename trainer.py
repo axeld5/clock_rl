@@ -1,8 +1,12 @@
+import os
+import re
+import torch
 from datasets import load_dataset
-from transformers import AutoProcessor
+from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 from huggingface_hub import login
 from dotenv import load_dotenv
-import os
+from peft import LoraConfig, get_peft_model
+from trl import GRPOConfig, GRPOTrainer
 
 load_dotenv()
 
@@ -44,16 +48,11 @@ def make_conversation(example):
 train_dataset = dataset.map(make_conversation)
 train_dataset = train_dataset.remove_columns(["type", "question"])
 
-import torch
-from transformers import Qwen2_5_VLForConditionalGeneration
-
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     pretrained_model_name_or_path=model_id,
     torch_dtype=torch.bfloat16,
     device_map="auto",
 )
-
-from peft import LoraConfig, get_peft_model
 
 lora_config = LoraConfig(
     task_type="CAUSAL_LM",
@@ -66,8 +65,6 @@ lora_config = LoraConfig(
 model = get_peft_model(model, lora_config)
 
 model.print_trainable_parameters()
-
-import re
 
 
 def format_reward(completions, **kwargs):
@@ -113,8 +110,6 @@ def accuracy_reward(completions: list[str], solution: list[str], **kwargs) -> li
     return rewards
 
 
-from trl import GRPOConfig
-
 # Configure training arguments using GRPOConfig
 training_args = GRPOConfig(
     output_dir="Qwen2.5-VL-3B-Instruct-Clock",
@@ -136,8 +131,6 @@ training_args = GRPOConfig(
     use_vllm=True,
     vllm_mode="colocate",
 )
-
-from trl import GRPOTrainer
 
 trainer = GRPOTrainer(
     model=model,
