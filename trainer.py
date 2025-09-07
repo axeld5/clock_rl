@@ -81,7 +81,7 @@ def format_hour_reward(completions, **kwargs):
     rewards = [1.0 if match else 0.0 for match in matches]
     return rewards
 
-def accuracy_reward(completions: list[str], solution: list[str], **kwargs) -> list[float]:
+def accuracy_reward(completions: list[str], answer: list[str], **kwargs) -> list[float]:
     """Reward function that checks if the completion matches the ground truth.
     Ground truth is expected to be in the format matching format_hour_reward pattern.
     """
@@ -90,13 +90,13 @@ def accuracy_reward(completions: list[str], solution: list[str], **kwargs) -> li
     # Pattern to extract time from answer section
     time_pattern = r"<answer>\n.*?(\d{1,2}:\d{2}:\d{2}).*?\n</answer>"
     
-    for completion, sol in zip(completions, solution):
+    for completion, sol in zip(completions, answer):
         # Extract time from completion
         completion_match = re.search(time_pattern, completion, re.DOTALL | re.MULTILINE)
         completion_time = completion_match.group(1) if completion_match else None
         
         # Extract time from solution
-        solution_time = sol
+        solution_time = sol.strip()
         
         # Compare extracted times
         if completion_time and solution_time:
