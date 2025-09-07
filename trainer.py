@@ -50,16 +50,16 @@ train_dataset = train_dataset.remove_columns(["type", "question"])
 
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     pretrained_model_name_or_path=model_id,
-    torch_dtype=torch.bfloat16,
+    dtype=torch.bfloat16,
     device_map="auto",
 )
 
 lora_config = LoraConfig(
     task_type="CAUSAL_LM",
-    r=8,
+    r=64,
     lora_alpha=32,
     lora_dropout=0.1,
-    target_modules=["q_proj", "v_proj"],
+    target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
 )
 
 model = get_peft_model(model, lora_config)
@@ -115,11 +115,11 @@ training_args = GRPOConfig(
     output_dir="Qwen2.5-VL-3B-Instruct-Clock",
     learning_rate=1e-5,
     remove_unused_columns=False,  # to access the solution column in accuracy_reward
-    num_train_epochs=1,
+    num_train_epochs=10,
     bf16=True,
     # Parameters that control the data preprocessing
     per_device_train_batch_size=2,
-    max_completion_length=1024,  # default: 256
+    max_completion_length=256,  # default: 256
     num_generations=2,  # default: 8
     max_prompt_length=2048,
     # Parameters related to reporting and saving
