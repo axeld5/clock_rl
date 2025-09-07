@@ -133,6 +133,8 @@ training_args = GRPOConfig(
     push_to_hub=True,
     save_strategy="steps",
     save_steps=10,
+    use_vllm=True,
+    vllm_mode="colocate",
 )
 
 from trl import GRPOTrainer
