@@ -1,11 +1,19 @@
 from datasets import load_dataset
 from transformers import AutoProcessor
+from huggingface_hub import login
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 dataset_id = "rohitsaxena/DateTimeQA"
 dataset = load_dataset(dataset_id)
 dataset = dataset["clock"]
 model_id = "Qwen/Qwen2.5-VL-3B-Instruct"
 processor = AutoProcessor.from_pretrained(model_id, use_fast=True, padding_side="left")
+
+token = os.getenv("HF_TOKEN")
+login(token)
 
 SYSTEM_PROMPT = (
     "A conversation between User and Assistant. The user asks a question, and the Assistant solves it. The assistant "
@@ -91,8 +99,7 @@ def accuracy_reward(completions: list[str], solution: list[str], **kwargs) -> li
         completion_time = completion_match.group(1) if completion_match else None
         
         # Extract time from solution
-        solution_match = re.search(time_pattern, sol, re.DOTALL | re.MULTILINE)
-        solution_time = solution_match.group(1) if solution_match else None
+        solution_time = sol
         
         # Compare extracted times
         if completion_time and solution_time:
