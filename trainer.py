@@ -128,8 +128,8 @@ training_args = GRPOConfig(
     push_to_hub=True,
     save_strategy="steps",
     save_steps=10,
-    use_vllm=True,
-    vllm_mode="colocate",
+    # use_vllm=True,  # Disabled due to compatibility issues with Qwen2.5-VL
+    # vllm_mode="colocate",
 )
 
 trainer = GRPOTrainer(
