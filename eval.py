@@ -1,5 +1,7 @@
 import time
 import torch
+import os
+from PIL import Image
 from qwen_vl_utils import process_vision_info
 
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
@@ -63,3 +65,76 @@ def generate_with_reasoning(problem, image):
     num_generated_tokens = output_ids.shape[1] - num_input_tokens
 
     return generated_text, inference_duration, num_generated_tokens
+
+
+def evaluate_all_clocks(clocks_folder="public_clocks"):
+    """Evaluate the model on all clock images in the specified folder."""
+    if not os.path.exists(clocks_folder):
+        print(f"Error: Folder '{clocks_folder}' does not exist.")
+        return
+
+    # Get all PNG files in the folder
+    clock_files = [f for f in os.listdir(clocks_folder) if f.endswith('.png')]
+    clock_files.sort()  # Sort for consistent ordering
+
+    if not clock_files:
+        print(f"No PNG files found in '{clocks_folder}'.")
+        return
+
+    print(f"Found {len(clock_files)} clock images to evaluate.")
+    print("=" * 60)
+
+    results = []
+    total_inference_time = 0
+    total_tokens = 0
+
+    for i, clock_file in enumerate(clock_files, 1):
+        clock_path = os.path.join(clocks_folder, clock_file)
+        print(f"\n[{i}/{len(clock_files)}] Evaluating: {clock_file}")
+
+        try:
+            # Load the clock image
+            image = Image.open(clock_path)
+
+            # Define the problem/question
+            problem = "What time does this clock show? Please provide the answer in HH:MM format."
+
+            # Generate response
+            generated_text, inference_time, num_tokens = generate_with_reasoning(problem, image)
+
+            # Store results
+            result = {
+                'file': clock_file,
+                'response': generated_text,
+                'inference_time': inference_time,
+                'tokens': num_tokens
+            }
+            results.append(result)
+
+            # Print summary for this clock
+            print(f"  Response: {generated_text}")
+
+            total_inference_time += inference_time
+            total_tokens += num_tokens
+
+        except Exception as e:
+            print(f"  Error processing {clock_file}: {str(e)}")
+            results.append({
+                'file': clock_file,
+                'error': str(e),
+                'response': None,
+                'inference_time': 0,
+                'tokens': 0
+            })
+
+    # Print summary statistics
+    print("\n" + "=" * 60)
+    print("EVALUATION SUMMARY")
+    print("=" * 60)
+    print(f"Total clocks processed: {len(results)}")
+    print(".3f")
+    return results
+
+
+if __name__ == "__main__":
+    evaluate_all_clocks()

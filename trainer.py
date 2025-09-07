@@ -115,7 +115,7 @@ training_args = GRPOConfig(
     output_dir="Qwen2.5-VL-3B-Instruct-Clock",
     learning_rate=1e-5,
     remove_unused_columns=False,  # to access the solution column in accuracy_reward
-    num_train_epochs=10,
+    num_train_epochs=5,
     bf16=True,
     # Parameters that control the data preprocessing
     per_device_train_batch_size=2,
